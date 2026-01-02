@@ -1,5 +1,6 @@
-name: WireGuard workflow
+name: WireGuard workflow (diagnostics)
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -26,6 +27,30 @@ jobs:
             PublicKey = 4qdIgJdpEoRbC/XvNo28uhhg2cO0KWMac4JlIlZrN08=
             AllowedIPs = 10.0.0.2/32
 
-      - name: Show public IP
+      - name: Wait a moment for interface to come up
+        run: sleep 2
+
+      - name: Diagnostics - public IP, server pubkey, wg and networking state
         run: |
-          curl -s https://ipinfo.io/ip
+          echo "===== Public IP (from runner) ====="
+          curl -s https://ipinfo.io/ip || echo "(failed to fetch public IP)"
+
+
+          echo
+          echo "===== wg show ====="
+          sudo wg show || echo "(wg show failed)"
+
+          echo
+          echo "===== UDP listeners (ss -u -ln) ====="
+          sudo ss -u -ln || sudo netstat -anu || echo "(failed to list UDP listeners)"
+
+          echo
+          echo "===== iptables NAT rules (nat table) ====="
+          sudo iptables -t nat -L -n -v || echo "(iptables nat list failed)"
+
+          echo
+          echo "===== ip addr show wg0 ====="
+          ip addr show wg0 || echo "(wg0 not present)"
+
+          echo
+          echo "===== End of diagnostics ====="
