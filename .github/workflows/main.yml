@@ -29,8 +29,3 @@ jobs:
       - name: Show public IP
         run: |
           curl -s https://ipinfo.io/ip
-
-      - name: Show server public key
-        run: |
-          # 使用 printf 避免尾部换行，tr 去掉 CRLF（Windows 回车），再生成公钥
-          printf '%s' "${{ secrets.SERVER_PRIVATE_KEY }}" | tr -d '\r' | wg pubkey
