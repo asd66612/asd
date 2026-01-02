@@ -2,7 +2,8 @@ name: WireGuard workflow (diagnostics)
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   setup-wireguard:
@@ -28,13 +29,18 @@ jobs:
             AllowedIPs = 10.0.0.2/32
 
       - name: Wait a moment for interface to come up
-        run: sleep 2
+        run: |
+          sleep 2
 
       - name: Diagnostics - public IP, server pubkey, wg and networking state
         run: |
           echo "===== Public IP (from runner) ====="
           curl -s https://ipinfo.io/ip || echo "(failed to fetch public IP)"
 
+          echo
+          echo "===== Server public key (derived from SERVER_PRIVATE_KEY) ====="
+          # derive and print public key only (do not print private key)
+          printf '%s' "${{ secrets.SERVER_PRIVATE_KEY }}" | tr -d '\r' | wg pubkey || echo "(failed to derive pubkey)"
 
           echo
           echo "===== wg show ====="
