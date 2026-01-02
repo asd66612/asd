@@ -32,5 +32,5 @@ jobs:
 
       - name: Show server public key
         run: |
-          # 从私钥导出公钥（不会在日志中泄露私钥；不要把私钥直接 echo 到日志）
-          echo "${{ secrets.SERVER_PRIVATE_KEY }}" | wg pubkey
+          # 使用 printf 避免尾部换行，tr 去掉 CRLF（Windows 回车），再生成公钥
+          printf '%s' "${{ secrets.SERVER_PRIVATE_KEY }}" | tr -d '\r' | wg pubkey
