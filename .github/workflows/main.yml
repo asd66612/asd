@@ -1,15 +1,26 @@
-- name: Setup WireGuard
-  uses: wenoa/setup-wireguard@v1.0.0
-  with:
-    WG_CONFIG: |
-      [Interface]
-      Address = 10.0.0.1/24
-      ListenPort = 51820
-      PrivateKey = 8GYeq7MuYkwDVxd6Ftj+z0O5+VabRmHOQrNgGf6UY3o=
-      MTU = 1420
-      PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-      PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+name: WireGuard workflow
+on:
+  push:
+    branches: [ main ]
+jobs:
+  setup-wireguard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      [Peer]
-      PublicKey = qN1ROTG9cc5w3U93ll5uapNAPbZzXctVzK6qgIjBx2M=
-      AllowedIPs = 10.0.0.2/32
+      - name: Setup WireGuard
+        uses: wenoa/setup-wireguard@v1.0.0
+        with:
+          WG_CONFIG: |
+            [Interface]
+            Address = 10.0.0.1/24
+            ListenPort = 51820
+            PrivateKey = 8GYeq7MuYkwDVxd6Ftj+z0O5+VabRmHOQrNgGf6UY3o=
+            MTU = 1420
+            PostUp = sysctl -w net.ipv4.ip_forward=1; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+            PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE; sysctl -w net.ipv4.ip_forward=0
+
+            [Peer]
+            PublicKey = qN1ROTG9cc5w3U93ll5uapNAPbZzXctVzK6qgIjBx2M=
+            AllowedIPs = 10.0.0.2/32
